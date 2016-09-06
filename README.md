@@ -8,3 +8,11 @@ function gs() {
    cd $(find-project $1)
 }
 ```
+
+### Install
+
+Simply issue a `go get` command, as follows.
+
+```bash
+go get -u github.com/patrickdappollonio/find-project
+```
