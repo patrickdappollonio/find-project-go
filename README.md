@@ -22,6 +22,22 @@ $ gs subpackage-c
 $GOPATH/src/github.com/project-a/package-b/subpackage-c
 ```
 
+### How it works
+
+`find-project` traverses your `$GOPATH` and finds the shortest way to the folder, so for short paths (or even better, _paths-not-too-deep_) it'll use less resources as well as run faster. The pure-bash alternative to this is:
+
+```bash
+function gs() {
+    cd $(find $GOPATH/src -type d -name $1 | sed 1q)
+}
+```
+
+The downsides to this function are:
+
+1. It may take a while to run, whereas `find-project` should run much quickly.
+2. It'll prefer longer paths, while `find-project` won't.
+3. It'll include dot-folders and `vendor/` folders, whereas `find-project` will silently omit them.
+
 ### Install
 
 Simply issue a `go get` command, as follows.
