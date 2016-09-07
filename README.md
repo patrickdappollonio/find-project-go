@@ -45,3 +45,5 @@ Simply issue a `go get` command, as follows.
 ```bash
 go get -u github.com/patrickdappollonio/find-project
 ```
+
+Then, modify your bash file (`.bashrc`, `.bash_profile` or whatever you use, it may even work for oh-my-zsh) and copy-paste the first bash script in this README. You can change the function name `gs()` to any other name. That'll be the name of the command you will call from your bash terminal.
