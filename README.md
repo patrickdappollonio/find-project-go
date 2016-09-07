@@ -9,6 +9,19 @@ function gs() {
 }
 ```
 
+So then if you have this folder... `$GOPATH/src/github.com/project-a/package-b/subpackage-c`, you can execute...
+
+```bash
+$ gs package-b && pwd
+$GOPATH/src/github.com/project-a/package-b
+
+$ gs project-a && pwd
+$GOPATH/src/github.com/project-a
+
+$ gs subpackage-c
+$GOPATH/src/github.com/project-a/package-b/subpackage-c
+```
+
 ### Install
 
 Simply issue a `go get` command, as follows.
