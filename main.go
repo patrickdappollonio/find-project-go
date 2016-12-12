@@ -2,20 +2,31 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
-	"path/filepath"
+	"strconv"
 	"strings"
 )
 
 const (
 	sourcePath   = "%s/src"
 	vendorFolder = "vendor"
+	logOutput    = "FIND_PROJECT_LOG"
 )
 
 func main() {
+	// Create a logger
+	logger := log.New(ioutil.Discard, "[find-project] ", log.Lshortfile)
+
 	// Check if we have 2 args
 	if len(os.Args) != 2 {
 		errexit("Incorrect number of arguments passed")
+	}
+
+	// Enable logger if defined in the env var
+	if b, _ := strconv.ParseBool(os.Getenv(logOutput)); b {
+		logger.SetOutput(os.Stdout)
 	}
 
 	// Get the argument we need
@@ -33,7 +44,7 @@ func main() {
 	gopath = fmt.Sprintf(sourcePath, strings.TrimSuffix(gopath, "/"))
 
 	// Open the directory for reading
-	f, err := os.Open(gopath)
+	_, err := os.Stat(gopath)
 
 	// Check for error
 	if err != nil {
@@ -44,16 +55,8 @@ func main() {
 		errexit("Unknown error: %s", err.Error())
 	}
 
-	// Defer closing the file
-	defer f.Close()
-
 	// Search for the folder recursively
-	pathfound, err := finduntil(f, gopath, searchingfor)
-
-	// Check for error
-	if err != nil {
-		errexit("Error while searching for the folder %q: %s", searchingfor, err.Error())
-	}
+	pathfound := findpath(logger, gopath, searchingfor)
 
 	// Check if we did find a path
 	if pathfound == "" {
@@ -62,66 +65,6 @@ func main() {
 
 	// Print the path to screen
 	fmt.Fprintln(os.Stdout, pathfound)
-}
-
-func finduntil(f *os.File, basepath, searchingfor string) (string, error) {
-	// Folder is already open, read it
-	// if there was a problem, we just omit this directory
-	contents, _ := f.Readdir(-1)
-
-	// Iterate over each found value
-	subfolders := make([]string, 0, len(contents))
-
-	// Try finding our own folder
-	for _, c := range contents {
-		// If it's not a directory or the directory is hidden, or it's a vendor folder, we don't care...
-		if !c.IsDir() || filepath.HasPrefix(c.Name(), ".") || c.Name() == vendorFolder {
-			continue
-		}
-
-		// Check first if this one is the one we need, so
-		// we don't keep recursing
-		if p := c.Name(); p == searchingfor {
-			return filepath.Join(basepath, p), nil
-		}
-
-		// Append the sub-folder to the slice
-		subfolders = append(subfolders, filepath.Join(basepath, c.Name()))
-	}
-
-	// Recursively check the subfolders now
-	for _, sf := range subfolders {
-		// Open the folder first
-		sub, err := os.Open(sf)
-
-		// Check for error, and return it if something happened
-		if err != nil {
-			// If the folder doesn't exist, continue
-			if os.IsNotExist(err) {
-				continue
-			}
-
-			return "", err
-		}
-
-		// Scan the contents of this folder too
-		loc, err := finduntil(sub, sf, searchingfor)
-
-		// Close the file
-		f.Close()
-
-		// If there was an error, return it
-		if err != nil {
-			return "", err
-		}
-
-		// Check if we found something
-		if loc != "" {
-			return loc, nil
-		}
-	}
-
-	return "", nil
 }
 
 func errexit(format string, args ...interface{}) {
