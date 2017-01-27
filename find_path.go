@@ -58,11 +58,11 @@ func findpath(l *log.Logger, startingpoint, searchingfor string) string {
 
 						// Get the stat info for this directory
 						st, err := os.Stat(subpath)
-						l.Println("Getting details for:", st.Name(), " -- at:", subpath)
-
 						if err != nil {
 							return
 						}
+
+						l.Println("Getting details for:", st.Name(), " -- at:", subpath)
 
 						// Check if it's one of the not needed directories
 						if !st.IsDir() || filepath.HasPrefix(st.Name(), ".") || st.Name() == vendorFolder {
