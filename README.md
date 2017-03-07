@@ -1,4 +1,4 @@
-# Find project
+# Find project [![Build Status](https://travis-ci.org/patrickdappollonio/find-project.svg?branch=master)](https://travis-ci.org/patrickdappollonio/find-project)
 
 A simple Go app to jump-to-a-project inside your `$GOPATH`. I use it as a command / alias.
 
