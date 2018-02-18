@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -11,14 +13,36 @@ var (
 	gopath = os.Getenv("GOPATH")
 )
 
+const usage = `Error: Missing parameter [FOLDER]
+
+Usage: "%s [FOLDER]"
+Where [FOLDER] is the name of the folder to search inside $GOPATH.
+If you're using the shell alias, change %q for the
+name of the alias.`
+
 func main() {
 	if len(os.Args) != 2 {
-		exit("Error: Additional parameter required: name of the folder to search for.")
+		exit(usage, os.Args[0], os.Args[0])
 	}
 
-	loc, err := finddir(filepath.Join(gopath, "src"), os.Args[1])
+	log.SetOutput(ioutil.Discard)
+	if _, found := os.LookupEnv("FPDEBUG"); found {
+		log.SetOutput(os.Stderr)
+	}
+
+	var err error
+	gopath, err = filepath.Abs(filepath.Join(gopath, "src"))
 	if err != nil {
-		exit("Error while traversing $GOPATH at %q: %s", gopath, err)
+		exit("Unable to get absolute path to $GOPATH, error: %s", err.Error())
+	}
+
+	loc, err := finddir(gopath, os.Args[1])
+	if err != nil {
+		exit("Error while traversing %q: %s", gopath, err)
+	}
+
+	if loc == "" {
+		exit("Folder %q not found inside $GOPATH", os.Args[1])
 	}
 
 	fmt.Fprintln(os.Stdout, loc)
@@ -39,6 +63,8 @@ func finddir(p, name string) (string, error) {
 	}
 
 	for i := 0; i < len(dirs); i++ {
+		log.Println(dirs[i])
+
 		if filepath.Base(dirs[i]) == name {
 			return dirs[i], nil
 		}
@@ -50,6 +76,7 @@ func finddir(p, name string) (string, error) {
 
 		for j := 0; j < len(extras); j++ {
 			if filepath.Base(extras[j]) == name {
+				log.Println(extras[j])
 				return extras[j], nil
 			}
 
