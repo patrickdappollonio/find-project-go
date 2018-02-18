@@ -33,7 +33,7 @@ func main() {
 				return filepath.SkipDir
 			}
 
-			fmt.Println(pathName)
+			// fmt.Println(pathName)
 
 			if de.Name() != searching {
 				return nil
