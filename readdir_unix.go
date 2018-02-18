@@ -1,14 +1,12 @@
 // +build darwin dragonfly freebsd linux nacl netbsd openbsd solaris
 
-package godirwalk
+package main
 
 import (
 	"os"
 	"path/filepath"
 	"syscall"
 	"unsafe"
-
-	"github.com/pkg/errors"
 )
 
 var defaultBufferSize, pageSize int
@@ -18,13 +16,13 @@ func init() {
 	defaultBufferSize = 2 * pageSize
 }
 
-func readdirents(osDirname string, scratchBuffer []byte) (Dirents, error) {
+func readdirents(osDirname string, scratchBuffer []byte) ([]*dirent, error) {
 	dh, err := os.Open(osDirname)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot Open")
+		return nil, err
 	}
 
-	var entries Dirents
+	var entries []*dirent
 
 	fd := int(dh.Fd())
 
@@ -38,7 +36,7 @@ func readdirents(osDirname string, scratchBuffer []byte) (Dirents, error) {
 		n, err := syscall.ReadDirent(fd, scratchBuffer)
 		if err != nil {
 			_ = dh.Close() // ignore potential error returned by Close
-			return nil, errors.Wrap(err, "cannot ReadDirent")
+			return nil, err
 		}
 		if n <= 0 {
 			break // end of directory reached
@@ -84,7 +82,7 @@ func readdirents(osDirname string, scratchBuffer []byte) (Dirents, error) {
 				fi, err := os.Stat(filepath.Join(osDirname, osChildname))
 				if err != nil {
 					_ = dh.Close() // ignore potential error returned by Close
-					return nil, errors.Wrap(err, "cannot Stat")
+					return nil, err
 				}
 				// We only care about the bits that identify the type of a file
 				// system node, and can ignore append, exclusive, temporary,
@@ -94,7 +92,7 @@ func readdirents(osDirname string, scratchBuffer []byte) (Dirents, error) {
 				mode = fi.Mode() & os.ModeType
 			}
 
-			entries = append(entries, &Dirent{name: osChildname, modeType: mode})
+			entries = append(entries, &dirent{name: osChildname, mode: mode})
 		}
 	}
 	if err = dh.Close(); err != nil {
