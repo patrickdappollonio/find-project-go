@@ -4,7 +4,7 @@ A simple Go app to jump-to-a-project inside your `$GOPATH`. I use it as a comman
 
 ```bash
 function gs() {
-cd $(find-project $1)
+  cd $(find-project $1)
 }
 ```
 
