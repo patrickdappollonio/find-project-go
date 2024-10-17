@@ -1,4 +1,7 @@
-# Find project [![Build Status](https://travis-ci.org/patrickdappollonio/find-project.svg?branch=master)](https://travis-ci.org/patrickdappollonio/find-project)
+# Find project 
+
+> [!WARNING]  
+> This project is no longer maintained. For a drop-in replacement, consider checking [`find-project`](https://github.com/patrickdappollonio/find-project).
 
 A simple Go app to jump-to-a-project inside your `$GOPATH`. I use it as a command / alias, so it can be connected to the Current Working Directory (CWD). Otherwise it'll just return the path to the folder with the given name inside `$GOPATH`. I use mine with the `gs` alias (as in "go switch"):
 
